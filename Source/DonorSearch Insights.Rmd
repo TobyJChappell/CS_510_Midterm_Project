@@ -1,0 +1,114 @@
+---
+title: "DonorSearch Insights"
+output: html_notebook
+---
+Import libraries
+```{r setup}
+library(ggplot2)
+library(gridExtra)
+library(dplyr)
+```
+
+Data Prep:
+Load data in select only columns that are needed. Then, reformat Wealth Based Capacity into a more readable format for plotting. Next, create a non-donor data frame containing only prospects. Lastly, create Constituency.Type and Donor.Type columns.
+```{r data}
+df <- read.csv(file = "../Data/DonorSearch Insights.csv")
+constituents <- df[,c("Total.Gift.Amount", "Constituency.Type", "Pref_Year", "Estimated.Capacity", "Wealth.Based.Capacity", "Acquisition.Rank", "Retention.Rank", "Upgrade.Rank", "Lifetime.Value.Rank", "Acquisition.Score", "Retention.Score", "Upgrade.Score", "Lifetime.Value.Score")]
+constituents$Wealth.Based.Capacity <- substr(constituents$Wealth.Based.Capacity, 5, nchar(constituents$Wealth.Based.Capacity))
+constituents$Wealth.Based.Capacity <- gsub(" ", "\n", constituents$Wealth.Based.Capacity)
+constituents[constituents$Wealth.Based.Capacity == "$10\nMillion\n-\n$50\nMillion", "Wealth.Based.Capacity"] = "$10 Million\n-\n$50 Million"
+constituents[constituents$Wealth.Based.Capacity == "$50\nMillion\n-\n$100\nMillion", "Wealth.Based.Capacity"] = "$50 Million\n-\n$100 Million"
+constituents[constituents$Wealth.Based.Capacity == "$100\nMillion+", "Wealth.Based.Capacity"] = "$100 Million+"
+constituents$Wealth.Based.Capacity <- factor(constituents$Wealth.Based.Capacity, levels=c("Unable\nto\nRate", "$1\n-\n$2,499", "$2,500\n-\n$4,999", "$5,000\n-\n$9,999", "$10,000\n-\n$14,999", "$15,000\n-\n$24,999", "$25,000\n-\n$49,999", "$50,000\n-\n$99,999", "$100,000\n-\n$249,999", "$250,000\n-\n$499,999", "$500,000\n-\n$999,999", "$1,000,000\n-\n$4,999,999", "$5,000,000\n-\n$9,999,999", "$10 Million\n-\n$50 Million", "$50 Million\n-\n$100 Million", "$100 Million+"))
+non_donors <- constituents[constituents$Acquisition.Rank != "",]
+constituents <- constituents %>% mutate(Constituency.Type = if_else(Constituency.Type == "Alumni", "Alumni", "Non-Alumni"))
+constituents <- constituents %>% mutate(Donor.Type = if_else(Total.Gift.Amount > 0, "Donor", "Non-Donor"))
+```
+
+Scatter plots:
+Create individual scatter plots for each insight score by wealth capacity, colored by the corresponding insight rank.
+```{r scatter}
+acq_col <- c("#48C2CB", "#3394A8", "#1D6786", "#083963")
+ret_col <- c("#F38531", "#D9632B", "#C04125", "#A61F1F")
+upg_col <- c("#73BCDC", "#3C7C94", "#053C4B")
+ltv_col <- c("#C1D8DF", "#94B4B9", "#679092")
+
+score_scatter <- function(df, col_name, colors) {
+  score_label <- paste(col_name, "Score", sep = " ")
+  score_col <- gsub(" ", ".", score_label)
+  rank_label <- paste(col_name, "Rank", sep = " ")
+  rank_col <- gsub(" ", ".", rank_label)
+  ggplot(df, aes_string(x = "Estimated.Capacity", y = score_col, color = rank_col)) + 
+    geom_point() + 
+    facet_grid(.~Wealth.Based.Capacity, scales="free") +
+    scale_color_manual(values=colors) +
+    labs(x = "Wealth Based Capacity", y = score_label, color = rank_label) + 
+    theme_bw() + 
+    theme(legend.position = "bottom",
+          strip.text.x = element_text(size = 4), 
+          axis.ticks.x = element_blank(),
+          axis.text.x = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.spacing.x = unit(0,"line"))
+}
+
+acq_scatter <- score_scatter(non_donors, "Acquisition", acq_col)
+ret_scatter <- score_scatter(constituents, "Retention", ret_col)
+upg_scatter <- score_scatter(constituents, "Upgrade", upg_col)
+ltv_scatter <- score_scatter(constituents, "Lifetime Value", ltv_col)
+
+scatter <- grid.arrange(acq_scatter, ret_scatter, upg_scatter, ltv_scatter, nrow = 2)
+ggsave("../Images/DonorSearch Insights Scatter.png", scatter, width = 13, height = 9, units = "in")
+scatter
+```
+
+Bar plots:
+Create individual bar plots for each insight score by wealth capacity, colored by the corresponding insight rank.
+```{r bar}
+rank_bar <- function(df, col_name, colors) {
+  rank_label <- paste(col_name, "Rank", sep=" ")
+  rank_col <- gsub(" ", ".", rank_label)
+  ggplot(df,aes_string(x = "Wealth.Based.Capacity", fill = rank_col)) + 
+    geom_bar() + 
+    scale_fill_manual(values = colors) +
+    labs(x = "Wealth Based Capacity", y = "Number of Constituents", fill = rank_label) + 
+    theme_bw() + 
+    theme(legend.position="bottom",
+          axis.text.x = element_text(size = 6, angle = 90, hjust=1, vjust = 0.5),
+          panel.grid.minor = element_blank())
+}
+
+acq_bar <- rank_bar(non_donors, "Acquisition", acq_col)
+ret_bar <- rank_bar(constituents, "Retention", ret_col)
+upg_bar <- rank_bar(constituents, "Upgrade", upg_col)
+ltv_bar <- rank_bar(constituents, "Lifetime.Value", ltv_col)
+
+bar <- grid.arrange(acq_bar, ret_bar, upg_bar, ltv_bar, nrow = 2)
+ggsave("../Images/DonorSearch Insights Bar.png", bar, width = 13, height = 9, units = "in")
+bar
+```
+
+Plot Number of Constituents by Constituency Type, colored by Donor Type
+```{r alumni}
+alumni <- constituents %>% group_by(Constituency.Type, Donor.Type) %>% summarise(Frequency = n())
+alumni_plot <- ggplot(alumni, aes(x = Constituency.Type, y = Frequency, fill = Donor.Type, label = Frequency)) +
+  geom_bar(stat = "identity") + 
+  geom_text(size = 3, position = position_stack(vjust = 0.5)) +
+  scale_fill_manual(values = c("#48C2CB","#F38531")) +
+  labs(x = "Constituency Type", y = "Number of Constituents", fill = "Donor Type", title = "Number of Constituents by Constituency Type") + 
+  theme_classic()
+ggsave("../Images/DonorSearch Insights Alumni.png", alumni_plot, width = 9, height = 13, units = "in")
+alumni_plot
+```
+
+Plot Number of Constituents by Graduation Year
+```{r grad}
+grad_year <- constituents %>% count(Pref_Year, Donor.Type) %>%  na.omit()
+grad_plot <- ggplot(grad_year, aes(x = Pref_Year, y = n, color = Donor.Type)) +
+  geom_line() + 
+  scale_color_manual(values = c("#48C2CB","#F38531")) +
+  labs(x = "Graduation Year", y = "Number of Constituents", color = "Donor Type", title = "Number of Constituents by Graduation Year") + 
+  theme_bw()
+ggsave("../Images/DonorSearch Insights Graduation.png", grad_plot, width = 13, height = 9, units = "in")
+grad_plot
+```
