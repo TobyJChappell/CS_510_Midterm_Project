@@ -32,7 +32,8 @@ The first chunk of code consists of typical data prep, involving a reformatting 
 
 ## Results
 The results of course are the resulting plots as shown below:
-```{r DonorSearch Insights Images, echo=FALSE, out.width = '100%'}
+
+```{r DonorSearch Insights Images, echo=FALSE, out.width = '1000px'}
 knitr::include_graphics("../Images/DonorSearch\ Insights\ Scatter.png", error = FALSE)
 knitr::include_graphics("../Images/DonorSearch\ Insights\ Bar.png", error = FALSE)
 knitr::include_graphics("../Images/DonorSearch\ Insights\ Alumni.png", error = FALSE)
@@ -46,4 +47,10 @@ Unlike DonorSearch Insights, DonorSearch Aristotle uses a machine learning model
 The code produced by the animation, while shorter than the Insights project, required far more tweaking to get the right effect. The first chunk loads in the data and takes a sample of 15,000 from the data. A tag of Donor/Non-Donor was added to each row randomly (since this is simply for demonstration purposes it doesn't make a difference to randomly generate). The update function is used for each iteration to define how the scatter plot should change over time. I found that adding a normal distribution to the previous data at each step gave it a nice effect. Lastly, I produced 50 plots where each is a single update from the last.
 
 ## Results
-As previously mentioned, the output of the code is a series of images which can be compiled into an animation. @ImageJ The result is in the Animation folder.
+As previously mentioned, the output of the code is a series of images which can be compiled into an animation. @ImageJ The result is in the Animation folder, but a few sample frames are provided below:
+
+```{r DonorSearch Aristotle Images, echo=FALSE, out.width = '1000px'}
+knitr::include_graphics("../animAristotle/Aristotle_1.png", error = FALSE)
+knitr::include_graphics("../animAristotle/Aristotle_2.png", error = FALSE)
+knitr::include_graphics("../animAristotle/Aristotle_3.png", error = FALSE)
+```
