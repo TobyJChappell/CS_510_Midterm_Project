@@ -26,3 +26,6 @@ The images produced by **DonorSearch Aristotle.R** are stored in the **animArist
 
 ## Tests
 Tests are located in the **Tests** directory. The test checks to make sure the update function works correctly in **DonorSearch Aristotle.R**.
+
+## Report
+The report generation markdown file in addition to the generated report is located in the **Report** folder.

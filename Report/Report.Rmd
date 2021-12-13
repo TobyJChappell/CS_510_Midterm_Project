@@ -2,13 +2,15 @@
 title: CS 510 Final Project Report
 author: Toby Chappell
 output: html_document
+bibliography: references.bib
+csl: council-of-science-editors.csl
 ---
 
 # Summary
 This project consists of two main goals. The first is to provide clean visualizations for DonorSearch's Insight Models, which can be used in presentations to respective clients. The second goal is to create an animation that shows how DonorSearch's machine learning powered Aristotle Score shifts over time as client data is updated.
 
 # Background
-DonorSearch is a wealth screening company that provides wealth data for nonprofits. Recently, they started using machine learning to produce scores about a constituents likelihood to give. These scores allow clients to be more efficient in requesting donations by filtering on those who are more likely to give. There are currently two machine learning enabled products produced by DonorSearch: DonorSearch Insights and DonorSearch Aristotle. DonorSearch Insights is the cheaper of the two products that provides clients a general machine learning score that rates a constituent as a giver. DonorSearch Aristotle on the other hand uses a custom model for a client that rates a constituents likelihood to give to their respective organization.
+DonorSearch is a wealth screening company that provides wealth data for nonprofits. @DonorSearch Recently, they started using machine learning to produce scores about a constituents likelihood to give. These scores allow clients to be more efficient in requesting donations by filtering on those who are more likely to give. There are currently two machine learning enabled products produced by DonorSearch: DonorSearch Insights and DonorSearch Aristotle. DonorSearch Insights is the cheaper of the two products that provides clients a general machine learning score that rates a constituent as a giver. DonorSearch Aristotle on the other hand uses a custom model for a client that rates a constituents likelihood to give to their respective organization.
 
 # DonorSearch Insights
 The purpose of DonorSearch Insights is to provide clients with actionable insights about their constituents. There are four scores in the data for the Insights file: Acquisition, Retention, Upgrade and Lifetime Value. The descriptions of each score are given below:
@@ -20,13 +22,13 @@ The purpose of DonorSearch Insights is to provide clients with actionable insigh
 
 Each score uses a general machine learning model that applies to that constituent as a donor. The data for the models are provided by DonorSearch and are intended to represent the US population. Thus, each person is given a single score independent of the client. In this project, the goal is to summarize these scores in addition to a few additional graphs a client might find useful. There are four plots that are produced:
 
-* Distribution of Insight Scores over Estimated Capacity as a scatter plot
-* Distribution of Estimated Capacity colored by Insight Ranks as a bar plot
+* Distribution of Insight Scores over Estimated Capacity as a scatter plot [@FacetWrap, @Grid]
+* Distribution of Estimated Capacity colored by Insight Ranks as a bar plot [@FacetWrap, @Grid]
 * Distribution of Donors vs. Prospects colored by Constituency Type as a bar plot
 * Number of Constituents over time colored by Constituency Type as a line graph
 
 ## Code
-The first chunk of code consists of typical data prep, involving a reformatting of Wealth Based Capacity, the creation a non-donor data frame containing only prospects, and the addition of the Constituency.Type and Donor.Type columns. Next, I created color gradients of DonorSearch colors to be used for each plot. The scatter plot is built into a function since there needs to be a scatter plot for each score. This reduced the number of lines of code used and made the code more readable. Lastly, the plots are arranged into a grid and saved as a png. A similar process was done for the bar plots, only having to alter the scatter function slightly to do so. The last two plots were fairly straight forward and thus didn't require a function.
+The first chunk of code consists of typical data prep, involving a reformatting of Wealth Based Capacity, the creation a non-donor data frame containing only prospects, and the addition of the Constituency.Type and Donor.Type columns. Next, I created color gradients @Coolors of DonorSearch colors to be used for each plot. The scatter plot is built into a function since there needs to be a scatter plot for each score. This reduced the number of lines of code used and made the code more readable. Lastly, the plots are arranged into a grid and saved as a png. A similar process was done for the bar plots, only having to alter the scatter function slightly to do so. The last two plots were fairly straight forward and thus didn't require a function.
 
 ## Results
 The results of course are the resulting plots as shown below:
@@ -38,10 +40,10 @@ knitr::include_graphics("../Images/DonorSearch\ Insights\ Graduation.png", error
 ```
 
 # DonorSearch Aristotle
-Unlike DonorSearch Insights, DonorSearch Aristotle uses a machine learning model specific to a client's constituents and their giving exclusive to their organization. A transactional dataset is provided by the client in addition to any other datapoints that might be useful and enriched with existing DonorSearch wealth data. The Aristotle Score then is a rating of each constituent's likelihood to give to the organization within the next 12 months. The purpose of this project is to demonstrate to clients how the model might rescore their constituents over time. To do this, the sample demo data was taken and the scores were slightly shifted after each iteration. The result is an image sequence where each image is a bit different than the last. These images are then strung into an animation which can be put in presentations for clients. This will help solidify the fact for clients that a constituent's likelihood to give changes over time. The images are then put together into an animation using ImageJ and saved as a .AVI file.
+Unlike DonorSearch Insights, DonorSearch Aristotle uses a machine learning model specific to a client's constituents and their giving exclusive to their organization. A transactional dataset is provided by the client in addition to any other datapoints that might be useful and enriched with existing DonorSearch wealth data. The Aristotle Score then is a rating of each constituent's likelihood to give to the organization within the next 12 months. The purpose of this project is to demonstrate to clients how the model might rescore their constituents over time. To do this, the sample demo data was taken and the scores were slightly shifted after each iteration. The result is an image sequence where each image is a bit different than the last. These images are then strung into an animation which can be put in presentations for clients. This will help solidify the fact for clients that a constituent's likelihood to give changes over time. The images are then put together into an animation using ImageJ and saved as a .AVI file. @ImageJ
 
 ## Code
 The code produced by the animation, while shorter than the Insights project, required far more tweaking to get the right effect. The first chunk loads in the data and takes a sample of 15,000 from the data. A tag of Donor/Non-Donor was added to each row randomly (since this is simply for demonstration purposes it doesn't make a difference to randomly generate). The update function is used for each iteration to define how the scatter plot should change over time. I found that adding a normal distribution to the previous data at each step gave it a nice effect. Lastly, I produced 50 plots where each is a single update from the last.
 
 ## Results
-As previously mentioned, the output of the code is a series of images which can be compiled into an animation. The result is in the Animation folder.
+As previously mentioned, the output of the code is a series of images which can be compiled into an animation. @ImageJ The result is in the Animation folder.
